@@ -42,7 +42,7 @@ https://gerador-de-imagens-omariosouto.alura-challenges.vercel.app/api/image-gen
   );
 }
 
-export default function ContributorsPage({ contributors }) {
+export default function ContributorsPage({ contributors, dadosDoGitHub }) {
   return (
     <QuizBackground backgroundImage="https://www.alura.com.br/assets/img/imersoes/react-2/fundo-do-mar-imersao-react-2-01.1609262503.svg">
       <QuizContainer style={{ margin: 'auto', padding: '5%', maxWidth: '1400px' }}>
@@ -51,6 +51,8 @@ export default function ContributorsPage({ contributors }) {
           <Widget.Header style={{ justifyContent: 'center' }}>
             <h1 style={{ fontSize: '25px' }}>Galeria de Projetos</h1>
           </Widget.Header>
+					<h1>						{dadosDoGitHub.name}					</h1>
+					<h1>						{dadosDoGitHub.login}					</h1>
           <Widget.Content>
             <p>
               Estamos muito felizes de contar com a sua participação, confira
@@ -93,6 +95,7 @@ export default function ContributorsPage({ contributors }) {
 }
 
 export async function getStaticProps() {
+	console.log('rodando apenas no server e n aparece no browser. essa eh a magica do next')
   const contributors = fs.readdirSync('./contributors').map((fileName) => {
     const [user, projectUrl] = fs
       .readFileSync(`./contributors/${fileName}`, { encoding: 'utf-8' })
@@ -102,11 +105,21 @@ export async function getStaticProps() {
       user,
       projectUrl,
     };
-  });
+	});
+	const retornoDaAPi = await fetch('https://api.github.com/users/omariosouto')
+		.then((respostaDoServer => {
+			return respostaDoServer.json()
+		}))
+	/*
+		desse jeito, os dados vindos do servidor aparecem no codigo fonte do html, sendo q com o react, eles n aparecem no codigo fonte do html.
+		o next pega chunks. n traz td de uma vez n.
+	*/
 
+//essas props q sao retornadas sao passadas p a funcao acima 'ContributorsPage' via destructuring do props
   return {
     props: {
-      contributors,
+			contributors,
+			dadosDoGitHub: retornoDaAPi
     },
   };
 }
